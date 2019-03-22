@@ -1,27 +1,32 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
-	"os"
 
-	"github.com/InstaSherlock/pkg"
+	"github.com/InstaSherlock/bot"
+	"github.com/InstaSherlock/config"
+)
+
+var (
+	configPath = flag.String("cfg", "", "Path to configuration JSON file")
 )
 
 func main() {
-	instagram, err := pkg.CreateInstagram("_i_am_not_bot_", "Neversleeps5")
+	flag.Parse()
+
+	// getting config
+	cfg, err := config.CreateConfig(*configPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
-	unfollowedUsers, err := instagram.GetUnfollowedUsers("iness_m_")
+	// bot initializing
+	instabot, err := bot.CreateBot(cfg)
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
-	f, _ := os.Create("unfollowed_users.txt")
-
-	for i, user := range *unfollowedUsers {
-		_, _ = f.WriteString(fmt.Sprintf("%d - %s\n", i, user))
-	}
+	// starting the bot
+	instabot.Run()
 }
