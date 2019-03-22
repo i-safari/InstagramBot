@@ -12,3 +12,4 @@
 *.out
 vault/
 logs/
+config.json
