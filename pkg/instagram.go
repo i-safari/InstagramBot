@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"log"
+	"os"
 
 	"gopkg.in/ahmdrz/goinsta.v2"
 )
@@ -44,69 +45,52 @@ func (i *Instagram) GetUserByUsername(username string) (*goinsta.User, error) {
 	return user, nil
 }
 
-// GetFollowers ...
-func (i *Instagram) GetFollowers(username string) (*[]string, error) {
-	user, err := i.GetUserByUsername(username)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	var result []string
-	followers := user.Followers()
-	for followers.Next() {
-		for _, user := range followers.Users {
-			result = append(result, user.Username)
-		}
-	}
-
-	return &result, nil
-}
-
-// GetFollowing ...
-func (i *Instagram) GetFollowing(username string) (*[]string, error) {
-	user, err := i.GetUserByUsername(username)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	var result []string
-	followers := user.Following()
-	for followers.Next() {
-		for _, user := range followers.Users {
-			result = append(result, user.Username)
-		}
-	}
-
-	return &result, nil
-}
-
 // GetUnfollowedUsers ...
 func (i *Instagram) GetUnfollowedUsers(username string) (*[]string, error) {
-	followers, err := i.GetFollowers(username)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	following, err := i.GetFollowing(username)
+	user, err := i.GetUserByUsername(username)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
 	followersMap := make(map[string]bool, 0)
-	for _, user := range *followers {
-		followersMap[user] = true
+	followers := user.Followers()
+	for followers.Next() {
+		for _, user := range followers.Users {
+			followersMap[user.Username] = true
+		}
 	}
 
 	var result []string
-	for _, user := range *following {
-		if _, exists := followersMap[user]; !exists {
-			result = append(result, user)
+	following := user.Following()
+	for following.Next() {
+		for _, user := range following.Users {
+			if _, exists := followersMap[user.Username]; !exists {
+				result = append(result, user.Username)
+			}
 		}
 	}
 
 	return &result, nil
+}
+
+// GetUnfollowedUsersFile ...
+func (i *Instagram) GetUnfollowedUsersFile(username, path string) error {
+	users, err := i.GetUnfollowedUsers(username)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(path,
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, user := range *users {
+		f.WriteString(user + "\n")
+	}
+
+	return nil
 }
