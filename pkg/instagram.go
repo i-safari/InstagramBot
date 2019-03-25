@@ -40,7 +40,7 @@ func (i *Instagram) GetUserByUsername(username string) (*goinsta.User, error) {
 }
 
 // GetUnfollowedUsers ...
-func (i *Instagram) GetUnfollowedUsers(username string) (*[]string, error) {
+func (i *Instagram) GetUnfollowedUsers(username string) (*[]goinsta.User, error) {
 	user, err := i.GetUserByUsername(username)
 	if err != nil {
 		return nil, err
@@ -54,12 +54,12 @@ func (i *Instagram) GetUnfollowedUsers(username string) (*[]string, error) {
 		}
 	}
 
-	var result []string
+	var result []goinsta.User
 	following := user.Following()
 	for following.Next() {
 		for _, user := range following.Users {
 			if _, exists := followersMap[user.Username]; !exists {
-				result = append(result, user.Username)
+				result = append(result, user)
 			}
 		}
 	}
