@@ -9,17 +9,17 @@ import (
 	"github.com/Unanoc/InstaFollower/pkg"
 )
 
-// Logger ...
+// Logger ensures th logging
 type Logger struct {
 	LogPath string
 }
 
-// CreateLogger ...
+// CreateLogger return th instance of Logger
 func CreateLogger(path string) *Logger {
 	return &Logger{LogPath: path}
 }
 
-// Log ...
+// Log writes logs to file. If the file does not exist, creates it
 func (l *Logger) Log(msgType string, args ...string) {
 	logFileName := time.Now().Format("2006-01-02")
 	logfilePath := pkg.GetCorrectPath(l.LogPath, logFileName, ".log")
@@ -32,6 +32,8 @@ func (l *Logger) Log(msgType string, args ...string) {
 	}
 	defer f.Close()
 
+	logContent := strings.Join(args, " | ")
+	log.Println(logContent)
 	logger := log.New(f, msgType, log.LstdFlags)
-	logger.Print(strings.Join(args, " | "))
+	logger.Print(logContent)
 }
