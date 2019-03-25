@@ -3,25 +3,16 @@ package bot
 import (
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
-	"github.com/InstaSherlock/config"
-	"github.com/InstaSherlock/pkg"
+	"github.com/Unanoc/InstaFollower/config"
+	"github.com/Unanoc/InstaFollower/pkg"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 const (
-	startMsg = `
-	Привет! Пришли мне свой username и я расскажу, кто от тебя отписался.
-	`
-	errorMsg = `
-	Произошла какая-то ошибка. Проверь корректность username.
-	`
-	errorFile = `
-	Не удалось сформировать ответ.
-	`
+	// BASEURL is url of Instagram web site
+	BASEURL = "https://www.instagram.com/"
 )
 
 // InstaBot ...
@@ -61,7 +52,7 @@ func (i *InstaBot) Run() {
 		log.Panic(err)
 	}
 
-	i.Logger.LogInfo("Bot is running...")
+	i.Logger.Log("[INFO] ", "Bot is running...")
 
 	for update := range updates {
 		if update.Message == nil { // ignore any non-Message Updates
@@ -71,9 +62,22 @@ func (i *InstaBot) Run() {
 	}
 }
 
+// Send sends message to user
+func (i *InstaBot) Send(userID int64, text string) {
+	msg := tgbotapi.NewMessage(userID, text)
+	i.BotAPI.Send(msg)
+}
+
+// Reply replies on message of user
+func (i *InstaBot) Reply(userID int64, msgID int, text string) {
+	msg := tgbotapi.NewMessage(userID, text)
+	msg.ReplyToMessageID = msgID
+	i.BotAPI.Send(msg)
+}
+
 // MessageHandler ...
 func (i *InstaBot) MessageHandler(update tgbotapi.Update) {
-	i.Logger.Log(update.Message.From.UserName, update.Message.Text)
+	i.Logger.Log("[MESSAGE] ", update.Message.From.UserName, update.Message.Text)
 
 	switch update.Message.Text {
 	case "/start":
@@ -85,41 +89,55 @@ func (i *InstaBot) MessageHandler(update tgbotapi.Update) {
 
 // StartHandler ...
 func (i *InstaBot) StartHandler(update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, startMsg)
-	msg.ReplyToMessageID = update.Message.MessageID
-	i.BotAPI.Send(msg)
+	i.Reply(update.Message.Chat.ID, update.Message.MessageID, STARTANSWER)
 }
 
 // MainHandler ...
 func (i *InstaBot) MainHandler(update tgbotapi.Update) {
-	userPath := getFilePath(i.Vault, update.Message.Text)
-	err := i.InstAccount.GetUnfollowedUsersFile(update.Message.Text, userPath)
+	unfollowers, err := i.InstAccount.GetUnfollowedUsers(update.Message.Text)
 	if err != nil {
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, errorMsg)
-		i.BotAPI.Send(msg)
-	} else {
-		f, err := os.Open(userPath)
-		if err != nil {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, errorFile)
-			i.BotAPI.Send(msg)
+		i.Send(update.Message.Chat.ID, WRONGUSERNAME)
+		return
+	}
+
+	length := len(*unfollowers)
+	switch {
+	case length == 0:
+		i.Send(update.Message.Chat.ID, NOUNFOLLOWERS)
+		return
+	// case length <= 50:
+	// 	for number, user := range *unfollowers {
+	// 		msg := fmt.Sprintf(
+	// 			"%d: %s\nNickname: %s\nFullName: %s",
+	// 			number+1, BASEURL+user.Username, user.Username, user.FullName)
+	// 		i.Send(update.Message.Chat.ID, msg)
+	// 	}
+	// 	return
+	default:
+		var resultMsg, userInfo string
+		var counter int
+
+		for number, user := range *unfollowers {
+			userInfo = fmt.Sprintf(
+				"%d: %s\nNickname: %s\nFullName: %s\n\n",
+				number+1,
+				BASEURL+user.Username,
+				user.Username,
+				user.FullName)
+
+			if counter < 10 {
+				resultMsg += userInfo
+				counter++
+			} else {
+				i.Send(update.Message.Chat.ID, resultMsg)
+				resultMsg = userInfo
+				counter = 1
+			}
+
+			if number == len(*unfollowers)-1 {
+				i.Send(update.Message.Chat.ID, resultMsg)
+			}
 		}
-		defer f.Close()
-		msg := tgbotapi.NewDocumentUpload(update.Message.Chat.ID, userPath)
-		i.BotAPI.Send(msg)
+		return
 	}
-}
-
-func getFilePath(dir, file string) string {
-	if len(dir) == 0 {
-		return ""
-	}
-
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0700)
-	}
-
-	if strings.LastIndex(dir, "/") == len(dir)-1 {
-		return fmt.Sprintf("%s%s.txt", dir, file)
-	}
-	return fmt.Sprintf("%s/%s.txt", dir, file)
 }
