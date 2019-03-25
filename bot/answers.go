@@ -4,6 +4,7 @@ const (
 	// STARTANSWER is answer for message "/start"
 	STARTANSWER = `
 	Привет! Пришли мне свой username в Instagram без "@" и я расскажу, кто не подписан на тебя в ответ.
+	Но только, если у тебя не приватный аккаунт!
 	`
 	// WRONGUSERNAME is answer for incorrect username
 	WRONGUSERNAME = `
