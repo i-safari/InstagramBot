@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/InstaSherlock/bot"
-	"github.com/InstaSherlock/config"
+	"github.com/Unanoc/InstaFollower/bot"
+	"github.com/Unanoc/InstaFollower/config"
 )
 
 var (
