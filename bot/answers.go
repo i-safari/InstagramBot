@@ -14,4 +14,8 @@ const (
 	NOUNFOLLOWERS = `
 	Вау, да у тебя нет таких людей, которые не подписаны на тебя в ответ!
 	`
+	// WAITMSG is message before sending unfollowers
+	WAITMSG = `
+	Пожалуйста подожди, это займет какое-то время:)
+	`
 )

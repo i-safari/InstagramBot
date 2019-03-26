@@ -105,15 +105,8 @@ func (i *InstaBot) MainHandler(update tgbotapi.Update) {
 	case length == 0:
 		i.Send(update.Message.Chat.ID, NOUNFOLLOWERS)
 		return
-	// case length <= 50:
-	// 	for number, user := range *unfollowers {
-	// 		msg := fmt.Sprintf(
-	// 			"%d: %s\nNickname: %s\nFullName: %s",
-	// 			number+1, BASEURL+user.Username, user.Username, user.FullName)
-	// 		i.Send(update.Message.Chat.ID, msg)
-	// 	}
-	// 	return
 	default:
+		i.Send(update.Message.Chat.ID, WAITMSG)
 		var resultMsg, userInfo string
 		var counter int
 
