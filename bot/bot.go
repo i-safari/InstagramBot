@@ -38,7 +38,6 @@ func CreateBot(cfg *config.Config) (*InstaBot, error) {
 		BotAPI:      bot,
 		Logger:      CreateLogger(cfg.LogPath),
 		InstAccount: instgram,
-		Vault:       cfg.Vault,
 	}, nil
 }
 

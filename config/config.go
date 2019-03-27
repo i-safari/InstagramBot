@@ -10,7 +10,6 @@ type Config struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	LogPath  string `json:"logpath"`
-	Vault    string `json:"vault"`
 	Token    string `json:"token"`
 }
 
