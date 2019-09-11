@@ -1,0 +1,5 @@
+{
+    "start": "Hello! I'm Instagram Bot. I'm able to find out your unfollowers on Instagram!\nLearn more about commands /help",
+    "help": "You can control me by sending these commands:\n\n/subscribe - bot will notify you about new unfollowers\n/unsubscribe - stop getting notifications about new unfollowers\n",
+    "default": "Send me /help to see a list of commands"
+}

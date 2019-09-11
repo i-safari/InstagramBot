@@ -1,0 +1,9 @@
+version: "3"
+services:
+  db:
+    restart: always
+    image: "postgres:11"
+    container_name: "instabot_postgres"
+    ports:
+      - "5432:5432"
+    env_file: configs/db_conf.env
