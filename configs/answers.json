@@ -1,5 +1,11 @@
 {
-    "start": "Hello! I'm Instagram Bot. I'm able to find out your unfollowers on Instagram!\nLearn more about commands /help",
-    "help": "You can control me by sending these commands:\n\n/subscribe - bot will notify you about new unfollowers\n/unsubscribe - stop getting notifications about new unfollowers\n",
+    "start": "Hello! I'm Instagram Bot. I'm able to find out your unfollowers on Instagram!\nLearn more about commands /help.",
+    "help": "You can control me by sending these commands:\n\n/listunfollowers - get list of people who doesn't follow you back\n/subscribe - bot will notify you about new unfollowers\n/unsubscribe - stop getting notifications about new unfollowers\n",
+    "list_unfollowers": "Please, enter a username of Instagram account to get a list of unfollowers.",
+    "subscribe": "Please, enter a username of Instagram account to get notifications about new unfollowers.",
+    "unsubscribe": "OK, you want to unsubscribe. Are you sure? \nSend `Yes` to confirm you really want to unsubscribe from getting notifications about new unfollowers.",
+    "unsubscribe_confirmation": "Please enter the confirmation text exactly like this:\nYes\n\nType /cancel to cancel the opearation.",
+    "success_cancel": "The command has been cancelled. Anything else I can do for you?\n\nSend /help for a list of commands. ...",
+    "error_cancel": "No active command to cancel. I wasn't doing anything anyway. Zzzzz...",
     "default": "Send me /help to see a list of commands"
 }

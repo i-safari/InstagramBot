@@ -1,20 +1,20 @@
 package bot
 
 import (
-	"InstaFollower/internal/instabot/db"
 	"InstaFollower/internal/instabot/utils"
+	"InstaFollower/internal/pkg/db"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 // InstaBot ...
 type InstaBot struct {
-	bot  *tgbotapi.BotAPI
-	conn *db.Database
+	bot      *tgbotapi.BotAPI
+	database *db.Database
 }
 
 // CreateBot ...
-func CreateBot(cfg *utils.Config, conn *db.Database) (*InstaBot, error) {
+func CreateBot(cfg *utils.Config, database *db.Database) (*InstaBot, error) {
 	bot, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
 		return nil, err
@@ -25,8 +25,8 @@ func CreateBot(cfg *utils.Config, conn *db.Database) (*InstaBot, error) {
 	}
 
 	return &InstaBot{
-		bot:  bot,
-		conn: conn,
+		bot:      bot,
+		database: database,
 	}, nil
 }
 
@@ -53,27 +53,24 @@ func (i *InstaBot) Run() {
 func (i *InstaBot) manager(update tgbotapi.Update) {
 	switch update.Message.Text {
 	case "/start":
-		i.commonHandler(update, "start")
+		i.commonHandler(i.database, update, "start", stateZero)
 	case "/help":
-		i.commonHandler(update, "help")
-	// case "/subscribe":
-	// 	i.subscribeHandler(update)
-	// case "/unsubscribe":
-	// 	i.unsubscribeHandler(update)
+		i.commonHandler(i.database, update, "help", stateZero)
+	case "/listunfollowers":
+		i.commonHandler(i.database, update, "list_unfollowers", stateListUnfollowers)
+	case "/subscribe":
+		i.commonHandler(i.database, update, "subscribe", stateSubscribe)
+	case "/unsubscribe":
+		i.commonHandler(i.database, update, "unsubscribe", stateUnsubscribe)
+	case "/cancel":
+		i.cancelHandler(i.database, update)
 	default:
-		i.commonHandler(update, "default")
+		i.statesHandler(i.database, update)
 	}
 }
 
 // Send sends message to user
 func (i *InstaBot) send(userID int64, text string) {
 	msg := tgbotapi.NewMessage(userID, text)
-	i.bot.Send(msg)
-}
-
-// Reply replies on message of user
-func (i *InstaBot) reply(userID int64, msgID int, text string) {
-	msg := tgbotapi.NewMessage(userID, text)
-	msg.ReplyToMessageID = msgID
 	i.bot.Send(msg)
 }
