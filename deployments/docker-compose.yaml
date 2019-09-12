@@ -6,4 +6,6 @@ services:
     container_name: "instabot_postgres"
     ports:
       - "5432:5432"
-    env_file: configs/db_conf.env
+    env_file: ./configs/db_conf.env
+    volumes:
+      - ./../scripts/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
