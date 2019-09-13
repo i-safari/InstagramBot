@@ -1,6 +1,6 @@
 package bot
 
-// Table `state`
+// Table "users"
 const (
 	sqlSelectUserStateByUserID = `
 		SELECT "state" 
