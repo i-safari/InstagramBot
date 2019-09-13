@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"InstaFollower/internal/instabot/instagram"
 	"InstaFollower/internal/instabot/utils"
 	"InstaFollower/internal/pkg/db"
 
@@ -9,8 +10,9 @@ import (
 
 // InstaBot ...
 type InstaBot struct {
-	bot      *tgbotapi.BotAPI
-	database *db.Database
+	bot       *tgbotapi.BotAPI
+	database  *db.Database
+	instagram *instagram.Instagram
 }
 
 // CreateBot ...
@@ -24,9 +26,15 @@ func CreateBot(cfg *utils.Config, database *db.Database) (*InstaBot, error) {
 		return nil, err
 	}
 
+	instagram, err := instagram.CreateInstagram(cfg.Login, cfg.Password)
+	if err != nil {
+		return nil, err
+	}
+
 	return &InstaBot{
-		bot:      bot,
-		database: database,
+		bot:       bot,
+		database:  database,
+		instagram: instagram,
 	}, nil
 }
 
