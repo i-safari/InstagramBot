@@ -14,18 +14,18 @@ func (i *InstaBot) commonHandler(
 ) {
 	i.send(update.Message.Chat.ID, answers[answerKey])
 
-	createOrUpdateUserState(database, update.Message.Chat.ID, state)
+	createOrUpdateUser(database, update, state)
 }
 
 func (i *InstaBot) cancelHandler(
 	database *db.Database,
 	update tgbotapi.Update,
 ) {
-	userState := getUserState(database, update.Message.Chat.ID)
+	userState := getUserState(database, update)
 
 	if userState != stateZero {
 		i.send(update.Message.Chat.ID, answers["success_cancel"])
-		createOrUpdateUserState(database, update.Message.Chat.ID, stateZero)
+		createOrUpdateUser(database, update, stateZero)
 	} else {
 		i.send(update.Message.Chat.ID, answers["error_cancel"])
 	}
@@ -35,24 +35,35 @@ func (i *InstaBot) statesHandler(
 	database *db.Database,
 	update tgbotapi.Update,
 ) {
-	userState := getUserState(i.database, update.Message.Chat.ID)
+	userState := getUserState(i.database, update)
 
 	switch userState {
 	case stateZero:
 		i.send(update.Message.Chat.ID, answers["default"])
 	case stateListUnfollowers:
-		i.send(update.Message.Chat.ID, "(отдаю список отписчиков)")
-		createOrUpdateUserState(database, update.Message.Chat.ID, stateZero)
+		// unfollowers, err := instagram.GetUnfollowers(update.Message.Text)
+		// if err != nil {
+		// 	i.send(update.Message.Chat.ID, answers["error_private_account"])
+		// 	createOrUpdateUser(database, update.Message.Chat.ID, stateZero)
+		// 	return
+		// }
+
+		// if len(unfollowers) > 0 {
+		// 	// make csv
+		// 	// send csv
+		// 	createOrUpdateUser(database, update.Message.Chat.ID, stateZero)
+		// }
+
+		i.send(update.Message.Chat.ID, answers["no_unfollowers"])
 	case stateSubscribe:
 		i.send(update.Message.Chat.ID, "(подписываю юзера)")
-		createOrUpdateUserState(database, update.Message.Chat.ID, stateZero)
+		createOrUpdateUser(database, update, stateZero)
 	case stateUnsubscribe:
 		if update.Message.Text == "Yes" {
 			i.send(update.Message.Chat.ID, "(отписываю юзера)")
-			createOrUpdateUserState(database, update.Message.Chat.ID, stateZero)
+			createOrUpdateUser(database, update, stateZero)
 		} else {
-			i.send(update.Message.Chat.ID, answers["unsubscribeconfirmation"])
-			createOrUpdateUserState(database, update.Message.Chat.ID, stateZero)
+			i.send(update.Message.Chat.ID, answers["unsubscribe_confirmation"])
 		}
 	default:
 		i.send(update.Message.Chat.ID, "кек такого не должно быть")

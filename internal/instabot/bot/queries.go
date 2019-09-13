@@ -4,17 +4,21 @@ package bot
 const (
 	sqlSelectUserStateByUserID = `
 		SELECT "state" 
-		FROM states 
-		WHERE "user_id" = $1
+		FROM users 
+		WHERE "id" = $1
 	`
-	sqlInsertUserState = `
-		INSERT INTO states
-		("user_id", "state")
-		VALUES ($1, $2)
+	sqlInsertUser = `
+		INSERT INTO users
+		("id", "username", "firstname", "lastname", "state")
+		VALUES ($1, $2, $3, $4, $5)
 	`
-	sqlUpdateUserState = `
-		UPDATE states
-		SET "state" = $2
-		WHERE "user_id" = $1
+	sqlUpdateUser = `
+		UPDATE users
+		SET 
+			"username" = $2,
+			"firstname" = $3,
+			"lastname" = $4,
+			"state" = $5
+		WHERE "id" = $1
 	`
 )
