@@ -1,24 +1,22 @@
 package bot
 
 import (
-	"InstaFollower/internal/instabot/utils"
 	"encoding/json"
 	"io/ioutil"
 )
 
-var (
-	answers map[string]string
-)
-
-func getAnswers(cfg *utils.Config) error {
-	answersMappingJSON, err := ioutil.ReadFile(cfg.PathToDialogs)
+func getAnswers(path string) (
+	answers map[string]string,
+	err error,
+) {
+	answersMappingJSON, err := ioutil.ReadFile(path)
 	if err != nil {
-		return err
+		return
 	}
 	err = json.Unmarshal(answersMappingJSON, &answers)
 	if err != nil {
-		return err
+		return
 	}
 
-	return nil
+	return
 }

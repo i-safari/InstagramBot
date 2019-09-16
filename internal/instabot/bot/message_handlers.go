@@ -1,97 +1,85 @@
 package bot
 
 import (
-	"InstaFollower/internal/pkg/db"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func (i *InstaBot) commonHandler(
-	database *db.Database,
 	update tgbotapi.Update,
 	answerKey string,
 	state int,
 ) {
-	i.send(update.Message.Chat.ID, answers[answerKey])
-
-	createOrUpdateUser(database, update, state)
+	i.send(update.Message.Chat.ID, i.answers[answerKey])
+	createOrUpdateUser(i.database, update, state)
 }
 
-func (i *InstaBot) cancelHandler(
-	database *db.Database,
-	update tgbotapi.Update,
-) {
-	userState := getUserState(database, update)
+func (i *InstaBot) cancelHandler(update tgbotapi.Update) {
+	userState, err := getUserState(i.database, update)
+	if err != nil {
+		i.send(update.Message.Chat.ID, i.answers["user_does_not_exist"])
+		return
+	}
 
-	if userState != stateZero {
-		i.send(update.Message.Chat.ID, answers["success_cancel"])
-		createOrUpdateUser(database, update, stateZero)
+	if userState != stateZERO {
+		i.send(update.Message.Chat.ID, i.answers["success_cancel"])
+		createOrUpdateUser(i.database, update, stateZERO)
 	} else {
-		i.send(update.Message.Chat.ID, answers["error_cancel"])
+		i.send(update.Message.Chat.ID, i.answers["error_cancel"])
 	}
 }
 
-func (i *InstaBot) statesHandler(
-	database *db.Database,
-	update tgbotapi.Update,
-) {
-	userState := getUserState(i.database, update)
+func (i *InstaBot) statesHandler(update tgbotapi.Update) {
+	userState, err := getUserState(i.database, update)
+	if err != nil {
+		i.send(update.Message.Chat.ID, i.answers["user_does_not_exist"])
+		return
+	}
 
 	switch userState {
-	case stateZero:
 
-		i.send(update.Message.Chat.ID, answers["default"])
+	case stateZERO:
 
-	case stateListUnfollowers:
-		// unfollowers, err := instagram.GetUnfollowers(update.Message.Text)
-		// if err != nil {
-		// 	i.send(update.Message.Chat.ID, answers["error_private_account"])
-		// 	createOrUpdateUser(database, update.Message.Chat.ID, stateZero)
-		// 	return
-		// }
+		i.send(update.Message.Chat.ID, i.answers["default"])
 
-		// if len(unfollowers) > 0 {
-		// 	// make csv
-		// 	// send csv
-		// 	createOrUpdateUser(database, update.Message.Chat.ID, stateZero)
-		// }
-
-		// i.send(update.Message.Chat.ID, answers["no_unfollowers"])
-	case stateSubscribe:
+	case stateSUBSCRIBE:
+		defer createOrUpdateUser(i.database, update, stateZERO)
 
 		user, err := i.instagram.GetUserByUsername(update.Message.Text)
 		if err != nil {
-			i.send(update.Message.Chat.ID, answers["no_instagram_user"])
+			i.send(update.Message.Chat.ID, i.answers["no_instagram_user"])
 			return
 		}
 
-		if err := subscribeUser(database, update, user); err != nil {
-			i.send(update.Message.Chat.ID, answers["error_user_already_subscribed"])
-			createOrUpdateUser(database, update, stateZero)
+		if err := subscribeUser(i.database, update, user); err != nil {
+			i.send(update.Message.Chat.ID, i.answers["error_user_already_subscribed"])
 			return
 		}
 
-		createOrUpdateUser(database, update, stateZero)
-		i.send(update.Message.Chat.ID, answers["successful_subscription"])
+		i.send(update.Message.Chat.ID, i.answers["successful_subscription"])
 
-	case stateUnsubscribe:
-		defer createOrUpdateUser(database, update, stateZero)
+	case stateUNSUBSCRIBE:
+		// defer createOrUpdateUser(i.database, update, stateZERO)
 
-		user, err := getUserForUnsubscription(database, update)
-		if err != nil {
-			i.send(update.Message.Chat.ID, answers["error_unsubscribe"])
-		}
+		// user, err := getUserForUnsubscription(database, update)
+		// if err != nil {
+		// 	i.send(update.Message.Chat.ID, answers["error_unsubscribe"])
+		// }
 
-		if update.Message.Text == "Yes" {
-			if err := unsubscribeUser(database, update, user); err != nil {
-				i.send(update.Message.Chat.ID, answers["error_unsubscribe"])
-				return
-			}
-			
-			i.send(update.Message.Chat.ID, answers["successful_unsubscription"])
-		} else {
-			i.send(update.Message.Chat.ID, answers["unsubscribe_confirmation"])
-		}
+		// if update.Message.Text == "Yes" {
+		// 	if err := unsubscribeUser(database, update, user); err != nil {
+		// 		i.send(update.Message.Chat.ID, answers["error_unsubscribe"])
+		// 		return
+		// 	}
+
+		// 	i.send(update.Message.Chat.ID, answers["successful_unsubscription"])
+		// } else {
+		// 	i.send(update.Message.Chat.ID, answers["unsubscribe_confirmation"])
+		// }
+
+	case stateLISTUNFOLLOWERS:
+
+		// createOrUpdateUser(i.database, update, stateZERO)
+		// i.send(update.Message.Chat.ID, answers["no_unfollowers"])
 
 	default:
 		i.send(update.Message.Chat.ID, "кек такого не должно быть")

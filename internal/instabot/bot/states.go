@@ -7,31 +7,37 @@ import (
 )
 
 const (
-	stateZero = iota
-	stateListUnfollowers
-	stateSubscribe
-	stateUnsubscribe
+	stateZERO = iota
+	stateLISTUNFOLLOWERS
+	stateSUBSCRIBE
+	stateUNSUBSCRIBE
 )
 
-func getUserState(db *db.Database, update tgbotapi.Update) (state int) {
-	db.Conn.QueryRow(sqlSelectUserStateByUserID, update.Message.Chat.ID).Scan(&state)
-	return // if user's state is found in database, it will returns 0 by default
+func getUserState(db *db.Database, update tgbotapi.Update) (state int, err error) {
+	err = db.Conn.QueryRow(sqlSelectUserStateByUserID, update.Message.Chat.ID).Scan(&state)
+	return
 }
 
 func createOrUpdateUser(db *db.Database, update tgbotapi.Update, state int) {
-	if _, err := db.Conn.Exec(sqlInsertUser,
-		update.Message.Chat.ID,
-		update.Message.Chat.UserName,
-		update.Message.Chat.FirstName,
-		update.Message.Chat.LastName,
-		state,
-	); err != nil {
-		db.Conn.Exec(sqlUpdateUser,
+	_, err := getUserState(db, update)
+
+	if err != nil {
+		db.Conn.Exec(sqlInsertUser,
 			update.Message.Chat.ID,
 			update.Message.Chat.UserName,
 			update.Message.Chat.FirstName,
 			update.Message.Chat.LastName,
 			state,
 		)
+
+		return
 	}
+
+	db.Conn.Exec(sqlUpdateUser,
+		update.Message.Chat.ID,
+		update.Message.Chat.UserName,
+		update.Message.Chat.FirstName,
+		update.Message.Chat.LastName,
+		state,
+	)
 }

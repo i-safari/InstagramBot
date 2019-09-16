@@ -2,8 +2,8 @@ package bot
 
 import (
 	"InstaFollower/internal/instabot/instagram"
-	"InstaFollower/internal/instabot/utils"
 	"InstaFollower/internal/pkg/db"
+	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -13,20 +13,27 @@ type InstaBot struct {
 	bot       *tgbotapi.BotAPI
 	database  *db.Database
 	instagram *instagram.Instagram
+	answers   map[string]string
 }
 
 // CreateBot ...
-func CreateBot(cfg *utils.Config, database *db.Database) (*InstaBot, error) {
-	bot, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
+func CreateBot() (*InstaBot, error) {
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		return nil, err
 	}
 
-	if err = getAnswers(cfg); err != nil {
+	answers, err := getAnswers(os.Getenv("PATH_TO_DIALOGS"))
+	if err != nil {
 		return nil, err
 	}
 
-	instagram, err := instagram.CreateInstagram(cfg.Login, cfg.Password)
+	instagram, err := instagram.CreateInstagram(os.Getenv("LOGIN"), os.Getenv("PASSWORD"))
+	if err != nil {
+		return nil, err
+	}
+
+	database, err := db.CreateConnection(os.Getenv("POSTGRES_URI"))
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +42,7 @@ func CreateBot(cfg *utils.Config, database *db.Database) (*InstaBot, error) {
 		bot:       bot,
 		database:  database,
 		instagram: instagram,
+		answers:   answers,
 	}, nil
 }
 
@@ -61,19 +69,19 @@ func (i *InstaBot) Run() {
 func (i *InstaBot) manager(update tgbotapi.Update) {
 	switch update.Message.Text {
 	case "/start":
-		i.commonHandler(i.database, update, "start", stateZero)
+		i.commonHandler(update, "start", stateZERO)
 	case "/help":
-		i.commonHandler(i.database, update, "help", stateZero)
+		i.commonHandler(update, "help", stateZERO)
 	case "/listunfollowers":
-		i.commonHandler(i.database, update, "list_unfollowers", stateListUnfollowers)
+		i.commonHandler(update, "list_unfollowers", stateLISTUNFOLLOWERS)
 	case "/subscribe":
-		i.commonHandler(i.database, update, "subscribe", stateSubscribe)
+		i.commonHandler(update, "subscribe", stateSUBSCRIBE)
 	case "/unsubscribe":
-		i.commonHandler(i.database, update, "unsubscribe", stateUnsubscribe)
+		i.commonHandler(update, "unsubscribe", stateUNSUBSCRIBE)
 	case "/cancel":
-		i.cancelHandler(i.database, update)
+		i.cancelHandler(update)
 	default:
-		i.statesHandler(i.database, update)
+		i.statesHandler(update)
 	}
 }
 

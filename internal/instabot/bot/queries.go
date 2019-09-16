@@ -36,6 +36,14 @@ const (
 		VALUES 
 			($1, $2)
 	`
+	sqlSelectSubscription = `
+		SELECT 
+			"user_id"
+		FROM 
+			"subscriptions"
+		WHERE
+			"user_id" = $1
+	`
 	sqlDeleteSubscription = `
 		DELETE 
 		FROM 
@@ -51,6 +59,14 @@ const (
 			("username", "followers", "following")
 		VALUES 
 			($1, $2, $3)
+	`
+	sqlSelectInsgramUser = `
+		SELECT
+			"username"
+		FROM
+			"insta_users"
+		WHERE
+			"username" = $1
 	`
 	sqlDeleteInstagramUser = `
 		DELETE 

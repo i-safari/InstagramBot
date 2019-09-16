@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "subscriptions" (
 CREATE TYPE "group" AS ENUM('following', 'followers');
 
 CREATE TABLE IF NOT EXISTS "following_followers" (
-  "username"       TEXT PRIMARY KEY,
+  "username"       TEXT,
   "fullname"       TEXT,
   "URL"            TEXT,
   "refer_username" TEXT NOT NULL REFERENCES "insta_users" ("username") ON DELETE CASCADE,
