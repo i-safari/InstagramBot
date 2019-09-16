@@ -4,7 +4,7 @@
     "list_unfollowers": "Please, enter a username of Instagram account to get a list of unfollowers.",
     "subscribe": "Please, enter a username of Instagram account to get notifications about new unfollowers.",
     "unsubscribe": "OK, you want to unsubscribe. Are you sure? \nSend `Yes` to confirm you really want to unsubscribe from getting notifications about new unfollowers.",
-    "unsubscribe_confirmation": "Please enter the confirmation text exactly like this:\nYes\n\nType /cancel to cancel the opearation.",
+    "unsubscribe_confirmation_fail": "You didn't confirmed your unsubscription.",
     "success_cancel": "The command has been cancelled. Anything else I can do for you?\n\nSend /help for a list of commands...",
     "user_does_not_exist": "Please, send me /start for register.",
     "error_cancel": "No active command to cancel. I wasn't doing anything anyway. Zzzzz...",

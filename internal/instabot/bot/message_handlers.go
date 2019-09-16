@@ -58,27 +58,26 @@ func (i *InstaBot) statesHandler(update tgbotapi.Update) {
 		i.send(update.Message.Chat.ID, i.answers["successful_subscription"])
 
 	case stateUNSUBSCRIBE:
-		// defer createOrUpdateUser(i.database, update, stateZERO)
+		defer createOrUpdateUser(i.database, update, stateZERO)
 
-		// user, err := getUserForUnsubscription(database, update)
-		// if err != nil {
-		// 	i.send(update.Message.Chat.ID, answers["error_unsubscribe"])
-		// }
+		if !isUserSubscribed(i.database, update) {
+			i.send(update.Message.Chat.ID, i.answers["error_unsubscribe"])
+			return
+		}
 
-		// if update.Message.Text == "Yes" {
-		// 	if err := unsubscribeUser(database, update, user); err != nil {
-		// 		i.send(update.Message.Chat.ID, answers["error_unsubscribe"])
-		// 		return
-		// 	}
-
-		// 	i.send(update.Message.Chat.ID, answers["successful_unsubscription"])
-		// } else {
-		// 	i.send(update.Message.Chat.ID, answers["unsubscribe_confirmation"])
-		// }
+		if update.Message.Text == "Yes" {
+			if err := unsubscribeUser(i.database, update); err != nil {
+				i.send(update.Message.Chat.ID, i.answers["error_unsubscribe"])
+				return
+			}
+			i.send(update.Message.Chat.ID, i.answers["successful_unsubscription"])
+		} else {
+			i.send(update.Message.Chat.ID, i.answers["unsubscribe_confirmation_fail"])
+		}
 
 	case stateLISTUNFOLLOWERS:
 
-		// createOrUpdateUser(i.database, update, stateZERO)
+		createOrUpdateUser(i.database, update, stateZERO)
 		// i.send(update.Message.Chat.ID, answers["no_unfollowers"])
 
 	default:

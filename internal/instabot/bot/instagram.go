@@ -9,13 +9,14 @@ import (
 )
 
 func subscribeUser(db *db.Database, update tgbotapi.Update, user *goinsta.User) (err error) {
-	if isUserSubscribed(db, update, user) { // почеум не работает???
+	if isUserSubscribed(db, update) {
 		return fmt.Errorf("subscription already exists")
 	}
 
 	if !isInstagramUserExist(db, user) {
-		createInstagramUser(db, user)
-		insertFollowersFollowing(db, user)
+		if err = createInstagramUser(db, user); err == nil {
+			insertFollowersFollowing(db, user)
+		}
 	}
 
 	createSubscription(db, update, user)
@@ -23,7 +24,7 @@ func subscribeUser(db *db.Database, update tgbotapi.Update, user *goinsta.User) 
 	return
 }
 
-func isUserSubscribed(db *db.Database, update tgbotapi.Update, user *goinsta.User) bool {
+func isUserSubscribed(db *db.Database, update tgbotapi.Update) bool {
 	var userID int
 	if err := db.Conn.QueryRow(
 		sqlSelectSubscription,
@@ -38,7 +39,7 @@ func isUserSubscribed(db *db.Database, update tgbotapi.Update, user *goinsta.Use
 func isInstagramUserExist(db *db.Database, user *goinsta.User) bool {
 	var username string
 	if err := db.Conn.QueryRow(
-		sqlSelectInsgramUser,
+		sqlSelectUsername,
 		user.Username,
 	).Scan(&username); err != nil {
 		return false
@@ -96,26 +97,20 @@ func createSubscription(db *db.Database, update tgbotapi.Update, user *goinsta.U
 	return
 }
 
-// func unsubscribeUser(db *db.Database, update tgbotapi.Update, user *goinsta.User) error {
-// 	if err := deleteInstagramUser(db, user); err != nil {
-// 		return err
-// 	}
+func unsubscribeUser(db *db.Database, update tgbotapi.Update) error {
+	if _, err := db.Conn.Exec(sqlDeleteSubscription,
+		update.Message.Chat.ID,
+	); err != nil {
+		return err
+	}
 
-// 	if _, err := db.Conn.Exec(sqlDeleteSubscription,
-// 		update.Message.Chat.ID,
-// 	); err != nil {
-// 		return err
-// 	}
+	return nil
+}
 
-// 	return nil
-// }
+func deleteSubscription(db *db.Database, update tgbotapi.Update, user *goinsta.User) (err error) {
+	_, err = db.Conn.Exec(sqlDeleteSubscription,
+		update.Message.Chat.ID,
+	)
 
-// func deleteInstagramUser(db *db.Database, user *goinsta.User) error {
-// 	if _, err := db.Conn.Exec(sqlDeleteInstagramUser,
-// 		user.Username,
-// 	); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
+	return
+}

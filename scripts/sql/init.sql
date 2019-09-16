@@ -24,6 +24,6 @@ CREATE TABLE IF NOT EXISTS "following_followers" (
   "username"       TEXT,
   "fullname"       TEXT,
   "URL"            TEXT,
-  "refer_username" TEXT NOT NULL REFERENCES "insta_users" ("username") ON DELETE CASCADE,
+  "refer_username" TEXT NOT NULL REFERENCES "insta_users" ("username"),
   "group_type"     "group"
 );
