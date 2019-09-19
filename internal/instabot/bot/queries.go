@@ -44,19 +44,11 @@ const (
 		WHERE
 			"user_id" = $1
 	`
-	sqlSelectInstaUsername = `
-		SELECT 
-			"insta_username"
-		FROM 
-			"subscriptions"
-		WHERE
-			"user_id" = $1
-	`
 	sqlDeleteSubscription = `
 		DELETE 
 		FROM 
 			"subscriptions"
-		WHERE "user_id" = ($1)
+		WHERE "user_id" = $1
 	`
 )
 
@@ -85,5 +77,27 @@ const (
 			("username", "fullname", "URL", "refer_username", "group_type")
 		VALUES 
 			($1, $2, $3, $4, $5)
+	`
+	sqlSelectUnfollowers = `
+		SELECT
+			"username",
+			"fullname",
+			"URL",
+			"refer_username",
+			"group_type"
+		FROM
+			"following_followers"
+		WHERE
+			"group_type" = 'following' AND
+			"username" NOT IN (
+				SELECT
+					"username"
+				FROM
+					"following_followers"
+				WHERE
+					"group_type" = 'followers'
+			)
+		ORDER BY
+			"fullname"
 	`
 )

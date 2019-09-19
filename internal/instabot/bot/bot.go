@@ -68,12 +68,12 @@ func (i *InstaBot) Run() {
 			continue
 		}
 
-		go i.manager(update)
+		go i.Manager(update)
 	}
 }
 
 // Manager is a router for message handlers
-func (i *InstaBot) manager(update tgbotapi.Update) {
+func (i *InstaBot) Manager(update tgbotapi.Update) {
 	switch update.Message.Text {
 	case "/start":
 		i.commonHandler(update, "start", stateZERO)
