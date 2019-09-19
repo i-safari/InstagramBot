@@ -14,6 +14,7 @@ type InstaBot struct {
 	database  *db.Database
 	instagram *instagram.Instagram
 	answers   map[string]string
+	vaultPath string
 }
 
 // CreateBot ...
@@ -38,11 +39,17 @@ func CreateBot() (*InstaBot, error) {
 		return nil, err
 	}
 
+	path := os.Getenv("VAULT_PATH")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
+
 	return &InstaBot{
 		bot:       bot,
 		database:  database,
 		instagram: instagram,
 		answers:   answers,
+		vaultPath: path,
 	}, nil
 }
 
@@ -86,7 +93,13 @@ func (i *InstaBot) manager(update tgbotapi.Update) {
 }
 
 // Send sends message to user
-func (i *InstaBot) send(userID int64, text string) {
+func (i *InstaBot) Send(userID int64, text string) {
 	msg := tgbotapi.NewMessage(userID, text)
+	i.bot.Send(msg)
+}
+
+// SendDocument sends a document to user
+func (i *InstaBot) SendDocument(userID int64, file interface{}) {
+	msg := tgbotapi.NewDocumentUpload(userID, file)
 	i.bot.Send(msg)
 }
