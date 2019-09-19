@@ -15,5 +15,7 @@
     "error_user_already_subscribed": "It seems that you are already subscribed...\n\nIf you want to subscribe to another Instagram account, firstly, you need to /unsubscribe.",
     "error_unsubscribe": "Sorry, but you are not able to unsubscribe because you are not subscribed yet.",
     "successful_unsubscription": "You are successfully unsubscribed!",
+    "instagram_user_is_private": "This user has a private profile.",
+    "failed_unfollowers_list": "Sorry...\nI couldn't get a list of unfollowers.\n\nPlease, try again later.",
     "default": "Send me /help to see a list of commands"
 }
