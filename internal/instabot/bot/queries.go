@@ -82,20 +82,20 @@ const (
 		SELECT
 			"username",
 			"fullname",
-			"URL",
-			"refer_username",
-			"group_type"
+			"URL"
 		FROM
 			"following_followers"
 		WHERE
 			"group_type" = 'following' AND
+			"refer_username" = $1 AND
 			"username" NOT IN (
 				SELECT
 					"username"
 				FROM
 					"following_followers"
 				WHERE
-					"group_type" = 'followers'
+					"group_type" = 'followers' AND
+					"refer_username" = $1
 			)
 		ORDER BY
 			"fullname"
