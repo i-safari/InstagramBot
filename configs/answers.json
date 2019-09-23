@@ -10,7 +10,7 @@
     "error_cancel": "No active command to cancel. I wasn't doing anything anyway. Zzzzz...",
     "error_private_account": "It's impossible to get unfollowers for this Instagram account.\nPerhaps, account does not exit or private.",
     "no_unfollowers": "Good news! This account does not have unfollowers!",
-    "no_instagram_user": "User with this username doesn't exit on Instagram or this account is private.\n\nType /cancel to cancel the opearation.",
+    "no_instagram_user": "User with this username doesn't exit on Instagram\n\nType /cancel to cancel the opearation.",
     "successful_subscription": "You have successfully subscribe to getting notifications about new unfollowers for this user!",
     "error_user_already_subscribed": "It seems that you are already subscribed...\n\nIf you want to subscribe to another Instagram account, firstly, you need to /unsubscribe.",
     "error_unsubscribe": "Sorry, but you are not able to unsubscribe because you are not subscribed yet.",
