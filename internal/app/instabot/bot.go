@@ -1,8 +1,11 @@
-package bot
+package instabot
 
 import (
-	"InstaFollower/internal/pkg/db"
+	"InstaFollower/internal/pkg/database"
 	"InstaFollower/internal/pkg/instagram"
+	"InstaFollower/internal/pkg/telegram"
+	"InstaFollower/pkg/utils"
+	"log"
 	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -10,8 +13,8 @@ import (
 
 // InstaBot ...
 type InstaBot struct {
-	bot       *tgbotapi.BotAPI
-	database  *db.Database
+	bot       *telegram.Bot
+	db        *database.Database
 	instagram *instagram.Instagram
 	answers   map[string]string
 	vaultPath string
@@ -19,12 +22,12 @@ type InstaBot struct {
 
 // CreateBot ...
 func CreateBot() (*InstaBot, error) {
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_TOKEN"))
+	bot, err := telegram.CreateBot(os.Getenv("TELEGRAM_TOKEN"))
 	if err != nil {
 		return nil, err
 	}
 
-	answers, err := getAnswers(os.Getenv("PATH_TO_DIALOGS"))
+	db, err := database.CreateConnection(os.Getenv("POSTGRES_URI"))
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +37,7 @@ func CreateBot() (*InstaBot, error) {
 		return nil, err
 	}
 
-	database, err := db.CreateConnection(os.Getenv("POSTGRES_URI"))
+	answers, err := utils.GetMapFromJSON(os.Getenv("PATH_TO_DIALOGS"))
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +49,7 @@ func CreateBot() (*InstaBot, error) {
 
 	return &InstaBot{
 		bot:       bot,
-		database:  database,
+		db:        db,
 		instagram: instagram,
 		answers:   answers,
 		vaultPath: path,
@@ -55,10 +58,9 @@ func CreateBot() (*InstaBot, error) {
 
 // Run ...
 func (i *InstaBot) Run() {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	log.Println("[INFO] bot is running...")
 
-	updates, err := i.bot.GetUpdatesChan(u)
+	updates, err := i.bot.GetUpdatesChanel()
 	if err != nil {
 		panic(err)
 	}
@@ -69,6 +71,14 @@ func (i *InstaBot) Run() {
 		}
 
 		go i.Manager(update)
+
+		log.Printf("[UPDATE] user_id=%d username=%s first_name=%s last_name=%s msg=%s",
+			update.Message.Chat.ID,
+			update.Message.Chat.UserName,
+			update.Message.Chat.FirstName,
+			update.Message.Chat.LastName,
+			update.Message.Text,
+		)
 	}
 }
 
@@ -76,30 +86,18 @@ func (i *InstaBot) Run() {
 func (i *InstaBot) Manager(update tgbotapi.Update) {
 	switch update.Message.Text {
 	case "/start":
-		i.commonHandler(update, "start", stateZERO)
+		i.commonHandler(update, update.Message.Text, stateZERO)
 	case "/help":
-		i.commonHandler(update, "help", stateZERO)
+		i.commonHandler(update, update.Message.Text, stateZERO)
 	case "/listunfollowers":
-		i.commonHandler(update, "list_unfollowers", stateLISTUNFOLLOWERS)
+		i.commonHandler(update, update.Message.Text, stateLISTUNFOLLOWERS)
 	case "/subscribe":
-		i.commonHandler(update, "subscribe", stateSUBSCRIBE)
+		i.commonHandler(update, update.Message.Text, stateSUBSCRIBE)
 	case "/unsubscribe":
-		i.commonHandler(update, "unsubscribe", stateUNSUBSCRIBE)
+		i.commonHandler(update, update.Message.Text, stateUNSUBSCRIBE)
 	case "/cancel":
 		i.cancelHandler(update)
 	default:
 		i.statesHandler(update)
 	}
-}
-
-// Send sends message to user
-func (i *InstaBot) Send(userID int64, text string) {
-	msg := tgbotapi.NewMessage(userID, text)
-	i.bot.Send(msg)
-}
-
-// SendDocument sends a document to user
-func (i *InstaBot) SendDocument(userID int64, file interface{}) {
-	msg := tgbotapi.NewDocumentUpload(userID, file)
-	i.bot.Send(msg)
 }

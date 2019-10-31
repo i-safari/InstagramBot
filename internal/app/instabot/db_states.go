@@ -1,7 +1,7 @@
-package bot
+package instabot
 
 import (
-	"InstaFollower/internal/pkg/db"
+	"InstaFollower/internal/pkg/database"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -13,7 +13,7 @@ const (
 	stateUNSUBSCRIBE
 )
 
-func getUserState(db *db.Database, update tgbotapi.Update) (state int, err error) {
+func getUserState(db *database.Database, update tgbotapi.Update) (state int, err error) {
 	err = db.Conn.QueryRow(`
 		SELECT "state" 
 		FROM 
@@ -27,7 +27,7 @@ func getUserState(db *db.Database, update tgbotapi.Update) (state int, err error
 	return
 }
 
-func createOrUpdateUser(db *db.Database, update tgbotapi.Update, state int) {
+func createOrUpdateUser(db *database.Database, update tgbotapi.Update, state int) {
 	_, err := getUserState(db, update)
 
 	if err != nil {

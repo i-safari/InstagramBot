@@ -1,6 +1,6 @@
 package main
 
-import bot "InstaFollower/internal/instabot"
+import bot "InstaFollower/internal/app/instabot"
 
 func main() {
 	bot, err := bot.CreateBot()
